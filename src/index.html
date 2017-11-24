@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Microphone listening with angular.js</title>
+<link rel="stylesheet" href="/css/style.css" />
+<script src="/lib/angular.js"></script>
+<script src="/js/raf.js"></script>
+<script src="/js/moving-average.js"></script>
+<script src="/js/index.js"></script>
+</head>
+<body ng-app="mic-connect" ng-controller="MicrophoneCtrl">
+  <div class="equalazier">
+    <div class="mark volume" style="bottom: {{volume * 100}}%"></div>
+    <div class="mark average" style="bottom: {{average * 100}}%"></div>
+    <div class="zone working" style="bottom: {{low * 100}}%; height: {{(high - low) * 100}}%"></div>
+    <div ng-if="calibrating" class="zone calibrating" style="bottom: {{min * 100}}%; height: {{(max - min) * 100}}%"></div>
+    <div ng-repeat="f in data track by $index" class="bar" style="height: {{f/2.56}}%"></div>
+  </div>
+  <div class="meter">
+    <div class="gauge">
+      <div class="needle" style="transform: rotate({{gauge}}deg)"></div>
+    </div>
+  </div>  
+  <div class="options">
+    <div>
+      <label>Sensitivity</label>
+      <input type="range" min="20" max="90" step="5" ng-model="sensitivity" style="direction: rtl"/>
+      {{sensitivity}} dB
+    </div>
+    <div>
+      <label>Dampening</label>
+      <input type="range" min="0" max="3" step="0.1" ng-model="dampening" />
+      {{dampening}} seconds
+    </div>
+    <div>
+      <button type="button" ng-click="calibrate()" ng-disabled="calibrating">Calibrate</button>
+      <div ng-show="calibrating">
+        <h3>Please keep silence</h3>
+        <div class="progress">
+          <div class="progress-bar" style="width: {{calibratingFramesDone / calibratingFrames * 100}}%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
