@@ -59,7 +59,7 @@ angular.module('mic-connect', ['raf', 'moving-average']).factory('microphone', [
       $scope.silence = -90;
       $scope.sensitivity = 60;
       $scope.dampening = 0.5;
-      $scope.average = new MovingAverage(30);
+      $scope.average = new MovingAverage(30, noiseEquivalent);
 
       $scope.$watchGroup(['minDecibels', 'maxDecibels'], function(newValues){
         if(newValues[0] < newValues[1])
@@ -92,13 +92,23 @@ angular.module('mic-connect', ['raf', 'moving-average']).factory('microphone', [
       function normalizeLevel(level){
         return Math.max(0, Math.min(1, (level - $scope.minDecibels) / ($scope.maxDecibels - $scope.minDecibels)));
       }
+      
+      function noiseEquivalent(data){
+        var count = 0, sum = 0.0, i = data.length;
+        while(i--){
+          var value = data[i];
+          if(typeof (value) !== 'undefined'){
+            ++count;
+            sum += Math.pow(10, value / 10);
+          }
+        }
+        return Math.log10(sum / count) * 10;
+      }
 
       raf.loop(function(){
         $scope.data = microphone.getData($scope.data);
         $scope.rawData = microphone.getRawData($scope.rawData);
-        $scope.level = Math.log10($scope.rawData.reduce(function(s, level){
-          return s + Math.pow(10, level / 10);
-        }, 0) / $scope.rawData.length) * 10;
+        $scope.level = noiseEquivalent($scope.rawData);
         $scope.volume = normalizeLevel($scope.level);
         $scope.average.add($scope.volume);
         $scope.gauge = ($scope.average - $scope.low) / ($scope.high - $scope.low);

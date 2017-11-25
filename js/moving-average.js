@@ -1,21 +1,25 @@
 angular.module('moving-average', []).factory('MovingAverage', [function(){
+
   MovingAverage.prototype = {
     add: function(value){
       this.head %= this.data.length;
       this.data[this.head++] = value;
     },
     get: function(){
-      var count = 0, sum = 0.0, i = this.data.length;
-      while(i--){
-        var value = this.data[i];
-        if(typeof (value) !== 'undefined'){
-          ++count;
-          sum += value;
-        }
-      }
-      return sum / count;
+      return this.reducer.call(this, this.data);
     }
   };
+  MovingAverage.LINEAR = function(data){
+    var count = 0, sum = 0.0, i = data.length;
+    while(i--){
+      var value = data[i];
+      if(typeof (value) !== 'undefined'){
+        ++count;
+        sum += value;
+      }
+    }
+    return sum / count;
+  }
   // some sugar to allow direct arithmetic operations on the object
   MovingAverage.prototype.valueOf = MovingAverage.prototype.get;
 
@@ -54,10 +58,11 @@ angular.module('moving-average', []).factory('MovingAverage', [function(){
 
   return MovingAverage;
 
-  function MovingAverage(size){
+  function MovingAverage(size, reducer){
     this.head = 0;
     this.data = [];
     this.size = size;
+    this.reducer = reducer || MovingAverage.LINEAR;
   }
 
   function arrayCopy(from, fromIndex, to, toIndex, count){
