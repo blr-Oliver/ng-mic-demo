@@ -4,7 +4,7 @@ angular.module('raf', []).factory('raf', ['$window', '$rootScope', function($win
   function raf(cb, $scope){
     $scope = $scope || $rootScope;
     var id = $$raf(cb && function(){
-      $scope.$apply(cb);
+      $scope.$apply(() => cb.apply(this, arguments));
     });
     return function(){
       $$caf(id);
@@ -14,7 +14,7 @@ angular.module('raf', []).factory('raf', ['$window', '$rootScope', function($win
   raf.loop = function(cb, $scope){
     $scope = $scope || $rootScope;
     var id = $$raf(cb && function frame(){
-      $scope.$apply(cb);
+      $scope.$apply(() => cb.apply(this, arguments));
       id = $$raf(frame);
     });
 
